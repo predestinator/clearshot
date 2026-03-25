@@ -11,6 +11,109 @@ Two modes:
 1. **Define** — Generate `taste.md`: design identity, standards, component taxonomy, anti-patterns
 2. **Verify** — Screenshot live UI, audit against `taste.md`, report with fixes
 
+---
+
+## Design Foundations
+
+These are non-negotiable principles of visual design. Use them when generating taste.md (to produce high-quality defaults) and when auditing (as an independent layer beyond taste.md conformance). A UI that matches its taste.md but violates these foundations is still a bad UI.
+
+### Hierarchy — the eye must know where to go
+
+Every screen has a reading order. Users scan in ~400ms before deciding to engage. Hierarchy is created by:
+
+- **Size contrast**: The largest element is read first. If your h1 is 44px and your h2 is 24px, that's a 1.83× ratio — clear. If your h1 is 24px and your h2 is 20px, that's 1.2× — they compete. **Minimum heading step ratio: 1.25×**. Display→h1 should be ≥1.5×.
+- **Weight contrast**: Bold next to regular creates hierarchy. But if everything is bold, nothing is. **Maximum two weights per visible section**: one for emphasis, one for body.
+- **Color contrast**: Not just WCAG — aesthetic contrast. Primary text should be ≥10:1 on the background. Secondary text ≥6:1. Muted text ≥4.5:1. If secondary and muted are visually identical, hierarchy collapses.
+- **Spatial hierarchy**: More whitespace around an element = more importance. A heading with 48px above and 12px below reads as a section start. A heading crammed between content reads as a label.
+
+**Test**: Squint at the page. Can you still see the hierarchy? If squinting makes everything look like one flat gray block, hierarchy has failed.
+
+### Spacing — rhythm, not randomness
+
+Good spacing follows a **consistent scale**. Pick a base unit (4px or 8px) and derive everything from multiples:
+
+```
+4  8  12  16  20  24  32  40  48  56  64  80  96
+```
+
+- **Section gaps**: 48–96px. This is what separates major content blocks. Too small and sections merge. Too large and the page feels empty.
+- **Element gaps within a section**: 12–24px. Cards in a grid, items in a list, form fields.
+- **Inner padding**: 16–32px. Inside cards, buttons, containers.
+- **Dense gaps**: 4–8px. Icon-to-label, badge-to-text, tight clusters.
+
+**The rule**: If you can't name which multiple of your base unit a gap is, the spacing is arbitrary. Arbitrary spacing is the #1 tell of AI-generated UI.
+
+### Color — relationships, not just hex values
+
+A palette is a set of **relationships**, not isolated swatches.
+
+- **60-30-10 rule**: 60% dominant (background/surface), 30% secondary (text, borders, supporting elements), 10% accent (primary action, highlights). If your accent color covers 30% of the viewport, it's no longer an accent.
+- **Saturation hierarchy**: Background = lowest saturation (near-neutral). Text = medium saturation (warm or cool gray). Accent = highest saturation (the only vivid color). If your background, cards, and buttons all have similar saturation, the page feels flat or noisy.
+- **Temperature consistency**: Warm grays (#EFEDEB, #C8C3BE) and cool grays (#E5E7EB, #9CA3AF) should not mix. Pick one temperature and own it.
+- **Text color stepping**: You need exactly 4 text levels: primary (headings), body (paragraphs), secondary (supporting), muted (meta/captions). Each must be visually distinct. If any two levels look the same at arm's length, merge them or increase the gap.
+
+**Test**: Convert the screenshot to grayscale. Is the hierarchy still visible? If the page becomes an undifferentiated gray, color is doing all the work and the structure is fragile.
+
+### Typography — a scale, not a collection
+
+Type should follow a **modular scale** with a consistent ratio. Common ratios:
+
+| Ratio | Name | Feeling |
+|-------|------|---------|
+| 1.125 | Major second | Tight, dense, editorial |
+| 1.200 | Minor third | Compact, professional |
+| 1.250 | Major third | Balanced, versatile |
+| 1.333 | Perfect fourth | Spacious, clear |
+| 1.500 | Perfect fifth | Dramatic, expressive |
+
+Pick one ratio. Derive every size from it:
+
+```
+Base: 16px
+× 1.25 = 20px (h4/subhead)
+× 1.25 = 25px (h3)
+× 1.25 = 31px (h2)
+× 1.25 = 39px (h1)
+× 1.25 = 49px (display)
+```
+
+- **Line height**: Body text = 1.5–1.7 of font size. Headings = 1.1–1.3 (tighter). Display = 1.0–1.15 (tightest).
+- **Font pairing**: Maximum 2 families. One for headings (personality), one for body (readability). They should share a similar x-height ratio. Never pair two display fonts.
+- **Weight range**: Use 2–3 weights maximum across the entire page. Regular (400) for body, Semibold (600) for subheads, Bold (700) for headings. If you're using 300, 400, 500, 600, 700, and 800, the weight system has no meaning.
+
+**Test**: Remove all color from the page (make everything black text on white). Is the hierarchy still obvious from size and weight alone? If not, the type scale is broken.
+
+### Composition — how the page breathes
+
+- **Negative space is structure.** Whitespace is not "empty" — it creates grouping, separation, and focus. A page with no breathing room feels suffocating. A page with too much feels unfinished. The amount of whitespace should be **proportional to the importance of what it surrounds**. More space around a hero = more emphasis.
+- **Alignment lines**: Every page should have a clear left edge that most content aligns to. Mixed alignments (center here, left there, right somewhere else) create visual chaos. Pick one alignment strategy per section.
+- **Visual weight distribution**: Heavy elements (images, dark sections, filled buttons) should be balanced across the page. If all the visual weight is in the top half, the bottom feels abandoned. If it's all on the left, the page tilts.
+- **Content density**: The right density depends on the product. A dashboard can be dense. A landing page should breathe. A form should be spacious. **Match density to cognitive load** — complex tasks need more space between elements.
+
+### Depth — the Z-axis has meaning
+
+Shadows and elevation are **semantic, not decorative**. Each depth level should communicate something:
+
+- **Level 0 (flat)**: Content at rest. Informational. Non-interactive. No shadow, no elevation.
+- **Level 1 (raised)**: Interactive surfaces. Clickable cards, tabs. Subtle shadow (`0 1px 3px`).
+- **Level 2 (elevated)**: Important containers that float above the page. Hero cards, sticky headers. Medium shadow (`0 4px 16px`).
+- **Level 3 (overlay)**: Modals, dropdowns, popovers. These block content below. Strong shadow (`0 8px 32px`).
+- **Action elements**: Buttons get their own shadow vocabulary — often colored shadows that hint at the button color.
+
+**The rule**: Maximum 3 shadow levels visible on any single viewport. If everything has a shadow, nothing has depth. If nothing has a shadow, the page is flat and lifeless. Pick the right number for the product's personality.
+
+### Polish — what separates "works" from "beautiful"
+
+These details compound. Individually subtle, collectively they make a UI feel crafted:
+
+- **Easing curves**: Never use `linear` for UI transitions. `ease-out` for entrances, `ease-in` for exits, `ease-in-out` for state changes. Duration: 150ms for micro-interactions (hover, press), 250–350ms for layout changes, 400–600ms for page transitions.
+- **Border radius consistency**: Pick 2–3 radius values and use them everywhere. Common: 0 (sharp), 8–12px (cards/inputs), 9999px (pills/avatars). Mixing 4px, 6px, 8px, 10px, 12px, 16px is noise.
+- **Icon consistency**: One icon family, one weight, one optical size. Mixing outlined and filled icons on the same page is a cognitive fracture. If filled, all filled. If outlined, all outlined. Exception: active/inactive tab states.
+- **Micro-interactions**: Buttons should respond to press (scale 0.97, darken). Hover states should be immediate (<100ms delay). Loading states should never leave the user wondering if something happened.
+- **Text rendering**: Use `-webkit-font-smoothing: antialiased` on dark-on-light. Never on light-on-dark (it makes text too thin). Use `text-rendering: optimizeLegibility` for headings.
+
+---
+
 ## Entry point
 
 When triggered, check if `taste.md` exists in the project root.
@@ -25,13 +128,14 @@ When triggered, check if `taste.md` exists in the project root.
 
 taste.md is not a token inventory. It is a **design projection** — a holistic understanding of what this product should look and feel like, derived from everything available.
 
-### Sources of truth (use ALL of them)
+### Sources of truth (use ALL of them, but filter through Design Foundations above)
 
-1. **User intent** — What the user has said across the entire conversation. Their goals, frustrations, emotional language, aesthetic preferences, references they've shared. "Make it feel native" is a design decision. "I want clarity" is a constraint. "It's too light" is a measurement.
+1. **User intent** — What the user has said across the entire conversation. Their goals, frustrations, emotional language, aesthetic preferences, references they've shared. "Make it feel native" is a design decision. "I want clarity" is a constraint. "It's too light" is a measurement. **But**: if the user's conversation reveals iterative band-aid fixes, don't encode those — project forward to what the UI *should* be.
 2. **Product context** — What the product does, who it serves, what outcome users seek. A contest platform for creative writers has a different taste than a billing dashboard. Read the copy, the page structure, the feature set.
-3. **Existing visual decisions** — CSS/Tailwind config, font imports, color palette, spacing patterns, component structures. These are decisions already made — respect them or challenge them, but know them.
-4. **Audience expectations** — What do the users of THIS product expect? What are they used to? What would feel wrong to them? A teen social app and an enterprise SaaS have different cognitive baselines.
-5. **What hasn't been said** — Infer from the product's positioning. If the copy is warm and personal, the UI shouldn't be cold and corporate. If the product is about creativity, the layout shouldn't be rigid.
+3. **Design Foundations** — Apply the principles above. If the user's existing palette has no saturation hierarchy, fix it. If the type scale has no consistent ratio, derive one. If spacing is arbitrary, systematize it. Don't just document what exists — project what *should* exist, grounded in the foundations.
+4. **Existing visual decisions** — CSS/Tailwind config, font imports, color palette, spacing patterns, component structures. These are decisions already made — respect the *intent* but challenge execution that violates foundations.
+5. **Audience expectations** — What do the users of THIS product expect? What are they used to? What would feel wrong to them? A teen social app and an enterprise SaaS have different cognitive baselines.
+6. **What hasn't been said** — Infer from the product's positioning. If the copy is warm and personal, the UI shouldn't be cold and corporate. If the product is about creativity, the layout shouldn't be rigid.
 
 ### Two approaches
 
@@ -43,8 +147,9 @@ taste.md is not a token inventory. It is a **design projection** — a holistic 
 
 **Autonomous mode** — when speed matters or user says "go yolo":
 1. Read every source above silently
-2. Generate taste.md with strong opinionated defaults
-3. Better to be specific and wrong than vague and useless — the user will correct what matters
+2. Apply Design Foundations to evaluate existing decisions — where they're strong, keep them. Where they're weak, improve them.
+3. Generate taste.md with strong opinionated defaults that are grounded in the foundations, not just mirrors of existing code
+4. Better to be specific and wrong than vague and useless — the user will correct what matters
 
 ### taste.md specification
 
@@ -217,7 +322,26 @@ Use `cursor-ide-browser` MCP tools in this order:
 
 ### Analysis
 
-Run every layer. Skip nothing.
+Run every layer. Skip nothing. Layer 0 runs independently of taste.md — it catches aesthetic failures even if taste.md itself is weak.
+
+#### Layer 0: Aesthetic Foundations
+
+Before comparing against taste.md, evaluate the screenshot against the Design Foundations above. These are universal — they apply regardless of project taste.
+
+| Check | What to measure | Fail condition |
+|-------|----------------|----------------|
+| Heading step ratio | Compute ratio between adjacent heading levels (h1/h2, h2/h3) | Any ratio < 1.25× |
+| Text level distinction | Compare primary, body, secondary, muted text colors at arm's length | Any two levels visually indistinguishable |
+| Spacing consistency | Identify the base unit. Check if all gaps are multiples of it | >2 gaps that don't fit the scale |
+| Weight discipline | Count distinct font weights visible in the viewport | >3 weights visible simultaneously |
+| Saturation hierarchy | Check bg saturation vs text saturation vs accent saturation | Bg and accent have similar saturation, or text is more vivid than accent |
+| Shadow semantics | Count distinct shadow levels. Check if non-interactive elements have shadows | >3 shadow levels, or flat content has shadows |
+| Radius consistency | List all border-radius values in use | >3 distinct radius values (excluding 0 and 9999px) |
+| Alignment | Check left-edge alignment across sections | Content elements starting at >3 different X positions within a section |
+| Negative space balance | Check vertical rhythm between sections | Adjacent sections with >2× difference in vertical gap |
+| Grayscale test | Mentally desaturate. Is hierarchy visible? | Hierarchy relies entirely on color with no size/weight differentiation |
+
+For each failure, provide: the measured value, the foundation principle it violates, and a specific fix. These are separate from taste.md deviations.
 
 #### Layer 1: Spatial Grid
 
@@ -320,6 +444,10 @@ Write to `~/.clearshot/reports/{date}-{slug}.md`:
 **Date:** {YYYY-MM-DD}
 **Viewport:** {width}×{height}
 **taste.md:** {present / absent — if absent, note it was skipped}
+
+## Aesthetic Foundations
+{Layer 0 results. Universal principles checked independently of taste.md.}
+{Each failure: measured value → principle violated → specific fix.}
 
 ## Spatial Map
 {5×5 grid analysis. Element inventory grouped by section.}
