@@ -23,20 +23,28 @@ When triggered, check if `taste.md` exists in the project root.
 
 ## Mode 1: Define — Generate taste.md
 
-### Gathering input
+taste.md is not a token inventory. It is a **design projection** — a holistic understanding of what this product should look and feel like, derived from everything available.
 
-**Ask mode** — prompt the user:
-1. Who uses this? (developers, consumers, enterprise, creative, mixed)
-2. What should it feel like? (professional, playful, serious, warm, cold, premium, utilitarian)
-3. Any reference sites or screenshots?
-4. Existing brand guidelines?
+### Sources of truth (use ALL of them)
 
-**Autonomous mode** — determine from the codebase:
-1. Read CSS/Tailwind config for existing design tokens (colors, fonts, radii, spacing)
-2. Read views/components for patterns (card types, button styles, layout structures)
-3. Infer audience from content, copy tone, and functionality
-4. Infer visual identity from existing choices
-5. Generate taste.md with strong, opinionated defaults — better to be specific and wrong than vague and useless
+1. **User intent** — What the user has said across the entire conversation. Their goals, frustrations, emotional language, aesthetic preferences, references they've shared. "Make it feel native" is a design decision. "I want clarity" is a constraint. "It's too light" is a measurement.
+2. **Product context** — What the product does, who it serves, what outcome users seek. A contest platform for creative writers has a different taste than a billing dashboard. Read the copy, the page structure, the feature set.
+3. **Existing visual decisions** — CSS/Tailwind config, font imports, color palette, spacing patterns, component structures. These are decisions already made — respect them or challenge them, but know them.
+4. **Audience expectations** — What do the users of THIS product expect? What are they used to? What would feel wrong to them? A teen social app and an enterprise SaaS have different cognitive baselines.
+5. **What hasn't been said** — Infer from the product's positioning. If the copy is warm and personal, the UI shouldn't be cold and corporate. If the product is about creativity, the layout shouldn't be rigid.
+
+### Two approaches
+
+**Ask mode** — when nuance matters, prompt the user:
+1. Who uses this and what do they expect?
+2. What feeling should this evoke? (not "modern" — that's nothing. "Warm but authoritative" is something.)
+3. Reference sites or screenshots?
+4. What currently bothers you about the UI?
+
+**Autonomous mode** — when speed matters or user says "go yolo":
+1. Read every source above silently
+2. Generate taste.md with strong opinionated defaults
+3. Better to be specific and wrong than vague and useless — the user will correct what matters
 
 ### taste.md specification
 
