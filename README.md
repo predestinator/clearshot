@@ -1,80 +1,72 @@
 # Clearshot
 
-Structured screenshot intelligence for AI coding agents. Analyzes UI screenshots with a 5×5 spatial grid, full element inventory, and design system extraction — facts and taste together, every time.
+Visual intelligence for AI interfaces. Two modes: **Define** (generate `taste.md` — your project's visual identity and standards) and **Verify** (screenshot live UI and audit against it). Uses browser tools to see what users see — not source code, the actual rendered page.
 
-Adapted from [udayanwalvekar/clearshot](https://github.com/udayanwalvekar/clearshot) for use as a [Cursor](https://cursor.com) agent skill.
+## Install
 
-## What it does
-
-Clearshot turns UI screenshots into structured, actionable analysis. When triggered, it:
-
-1. **Maps** the interface on a 5×5 spatial grid — every element inventoried with hex colors, pixel sizes, states
-2. **Extracts** the design system — color palette, typography scale, spacing patterns, border radii
-3. **Escalates** to full blueprint when building — layout architecture, interaction map, responsive context
-4. **Reports** findings with prioritized issues (P0–P3) and a taste section (what works, what doesn't, what's missing)
-
-## Use as a Cursor skill
-
-Copy `SKILL.md` into your Cursor skills directory:
+Copy `SKILL.md` into your project or user skills directory:
 
 ```bash
+# Project-level (shared with team)
+mkdir -p .cursor/skills/clearshot
+cp SKILL.md .cursor/skills/clearshot/SKILL.md
+
+# User-level (personal, all projects)
 mkdir -p ~/.cursor/skills-cursor/clearshot
 cp SKILL.md ~/.cursor/skills-cursor/clearshot/SKILL.md
 ```
 
-The skill activates on commands like:
-- "analyze this screenshot"
-- "audit this UI"
-- "rebuild this"
-- "match this design"
-- "taste your UI"
+Your AI agent picks it up automatically. Trigger with:
+- "generate taste" — creates `taste.md` for your project
+- "audit this UI" / "taste your UI" — screenshots and audits the live page
+- "full clearshot" — generates taste.md then audits against it
 
-It uses Cursor's `cursor-ide-browser` MCP tools (`browser_navigate`, `browser_take_screenshot`, `browser_scroll`, `browser_resize`) to capture and analyze pages.
+## What it does that others don't
+
+Every other UI skill reads your code. Clearshot opens the browser.
+
+| | Clearshot | Code-based skills |
+|---|---|---|
+| **Sees** | Rendered pixels, computed styles | Source CSS, HTML templates |
+| **Measures** | Actual contrast ratios, real font sizes | Token values that may not apply |
+| **Catches** | Font rendering issues, image loading failures, layout overlap, animation timing | Token inconsistencies, missing dark mode vars |
+| **Generates** | `taste.md` — project-specific visual identity | Generic design rules |
+| **Checks** | Live UI against `taste.md` standards | Code against linting rules |
 
 ## How it works
 
-### Gate check
+### 1. Define mode — taste.md
 
-Not every image needs Clearshot:
-- **Not a UI and not building UI** → skip, respond normally
-- **Not a UI but building UI** → describe mood/texture/weight as inspiration
-- **Is a UI and building/evaluating UI** → full analysis
+Analyzes your codebase (design tokens, components, copy tone) to generate `taste.md`: a living specification of your project's visual identity. Covers palette, typography, spacing, shape, depth, component taxonomy (static containers vs interactive surfaces vs action buttons), project-specific anti-patterns, and universal AI slop indicators.
 
-### Analysis levels
+Can ask you questions first or go fully autonomous.
 
-**Level 1: Map** (always runs) — 5×5 grid division. Every visible element cataloged: type, label, position, state, size, colors, borders, shadows, icons. Grouped by section. Notes on visual hierarchy, breathing room, and intentionality.
+### 2. Verify mode — audit
 
-**Level 2: System** (always runs) — Design system extraction. Colors (all hex), typography (sizes, weights, families), spacing patterns (tight/comfortable/spacious), border radius patterns, overall density.
+Navigates to your live URL, takes screenshots at multiple scroll positions and breakpoints (375, 768, 1440), extracts computed styles via browser console, then runs five analysis layers:
 
-**Level 3: Blueprint** (escalates when building) — Layout architecture, container widths, responsive context, z-index layers, interaction map, primary/secondary CTAs, form elements, friction points.
+1. **Spatial Grid** — 5x5 cell-by-cell element inventory with hex colors, pixel sizes, states
+2. **Taste Check** — every observation compared against `taste.md`
+3. **Cognitive Load** — Clarity / Action / Delight grading (A through F)
+4. **Accessibility** — WCAG AA contrast, touch targets, focus indicators, heading hierarchy
+5. **Responsive** — layout reflow, text readability, target sizes at each breakpoint
 
-### Output
+Issues are prioritized P0 (blocker) through P3 (polish), each with the specific CSS/HTML fix.
 
-Reports are written to `~/.clearshot/reports/{date}-{slug}.md` in this structure:
+## The taste.md spec
 
-```
-# {Page name} — Clearshot Audit
-**URL:** {url}
-**Date:** {YYYY-MM-DD}
-**Viewport:** {width}×{height}
+The generated `taste.md` includes:
 
-## Level 1: Map
-## Level 2: System
-## Issues
-## Taste
-```
-
-## Core principles
-
-- **Be specific.** "A dashboard with some cards" is never acceptable. "3-column grid, ~280px cards, #FFFFFF bg, 12px radius, border rgba(0,0,0,0.06) + shadow 0 2px 8px" is.
-- **Hex over color names, pixels over vague sizes.** Say #3B82F6 not "blue." Say ~16px not "some."
-- **Group by section, not by element type.**
-- **Call out the non-obvious.** Custom illustrations, unusual patterns, implied animations.
-- **Match the user's pace.** Rapid iteration = concise output. Detailed audit = exhaustive.
-
-## Example
-
-See [`examples/full-audit-report.md`](examples/full-audit-report.md) for a real audit generated by Clearshot on a production site.
+- **Identity** — one sentence: what this is and who it's for
+- **Principles** — 3-5 design decisions (not platitudes)
+- **Palette** — every color role with hex values
+- **Typography** — full scale with family, size, weight, case, tracking
+- **Spacing** — base unit and derived values
+- **Shape** — radius values per element type
+- **Depth** — shadow hierarchy (flat → raised → elevated → button)
+- **Component taxonomy** — visual rules for static containers, interactive surfaces, primary buttons, secondary buttons, form inputs, text links
+- **Anti-patterns** — project-specific things to never do
+- **AI slop indicators** — universal generated-UI tells to flag
 
 ## License
 

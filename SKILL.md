@@ -1,110 +1,356 @@
 ---
 name: clearshot
-description: "Structured screenshot intelligence for Cursor. Analyzes UI screenshots with a 5×5 spatial grid, full element inventory, and design system extraction — facts and taste together, every time. Escalates to full blueprint when building. Trigger on any UI screenshot or commands like 'analyze this screenshot,' 'audit this UI,' 'rebuild this,' 'match this design,' 'taste your UI.' Skip for non-UI images. Adapted from github.com/udayanwalvekar/clearshot for Cursor's browser MCP tools."
+description: "Visual intelligence for AI interfaces. Two modes: Define (generate taste.md — your project's visual identity and standards) and Verify (screenshot live UI and audit against taste.md). Uses browser tools to see what users see — not source code, the actual rendered page. Trigger on: 'audit UI', 'check taste', 'generate taste', 'review design', 'screenshot analysis', 'taste your UI'. Skip for non-UI images."
 ---
 
-# Clearshot — Structured Screenshot Intelligence for Cursor
+# Clearshot — Visual Intelligence for AI Interfaces
 
-## How to use
+You see what users see. You navigate to the live page, screenshot it, measure computed values, and judge the result. You do not read CSS files and guess — you open the browser and look.
 
-Use the `cursor-ide-browser` MCP tools to capture and analyze UI:
+Two modes:
+1. **Define** — Generate `taste.md`: design identity, standards, component taxonomy, anti-patterns
+2. **Verify** — Screenshot live UI, audit against `taste.md`, report with fixes
 
-1. **Navigate**: `browser_navigate` to the target URL with `take_screenshot_afterwards: true`
-2. **Lock**: `browser_lock` to prevent interference during analysis
-3. **Capture**: `browser_take_screenshot` (viewport or `fullPage: true` for entire page)
-4. **Scroll + capture**: `browser_scroll` down, then `browser_take_screenshot` again for below-fold content
-5. **Resize + capture**: `browser_resize` to test responsive breakpoints (mobile: 375×812, tablet: 768×1024, desktop: 1440×900)
-6. **Analyze**: Apply the analysis framework below to every screenshot
-7. **Report**: Write findings to `~/.clearshot/reports/{date}-{page-slug}.md`
-8. **Unlock**: `browser_unlock` when done
+## Entry point
 
-## Gate check
+When triggered, check if `taste.md` exists in the project root.
 
-Not every image needs this skill.
+- **No taste.md**: Run Define mode. Ask the user for input or go autonomous (see below).
+- **taste.md exists**: Run Verify mode. Screenshot and audit against it.
+- **User says "full"**: Run Define then immediately Verify.
 
-1. Is this a digital interface? (websites, apps, dashboards, mockups, wireframes, Figma exports count. Photos, memes, charts do not.)
-2. Is the conversation about building, debugging, designing, or evaluating UI?
+---
 
-**Three outcomes:**
-- Neither true: exit skill, respond normally.
-- Image is not UI but conversation IS about building UI: describe mood/texture/weight as inspiration. No structured analysis.
-- Image IS a UI and conversation is about building/evaluating: proceed with analysis levels.
+## Mode 1: Define — Generate taste.md
 
-## Analysis levels
+### Gathering input
 
-Every analysis combines facts AND taste. Every observation is grounded in specifics (hex values, pixel measurements) AND includes how it feels (hierarchy, weight, cohesion).
+**Ask mode** — prompt the user:
+1. Who uses this? (developers, consumers, enterprise, creative, mixed)
+2. What should it feel like? (professional, playful, serious, warm, cold, premium, utilitarian)
+3. Any reference sites or screenshots?
+4. Existing brand guidelines?
 
-### Level 1: Map (always runs)
+**Autonomous mode** — determine from the codebase:
+1. Read CSS/Tailwind config for existing design tokens (colors, fonts, radii, spacing)
+2. Read views/components for patterns (card types, button styles, layout structures)
+3. Infer audience from content, copy tone, and functionality
+4. Infer visual identity from existing choices
+5. Generate taste.md with strong, opinionated defaults — better to be specific and wrong than vague and useless
 
-Divide the screenshot into a **5×5 grid**. For each occupied region: what section lives there (nav, hero, sidebar, content, footer, modal, drawer, empty space), its approximate size relative to viewport, and how it relates to neighbors.
+### taste.md specification
 
-For every visible element, capture:
-- **Type**: button, input, card, image, icon, text, link, toggle, dropdown, tab, badge, avatar, table, chart, etc.
-- **Label/content**: exact visible text
-- **Position**: grid region + relative placement
-- **State**: default, hover, active, disabled, selected, error, loading, focused
-- **Size**: pixel estimate
-- **Background color**: hex
-- **Text color**: hex
-- **Border**: visible/none + radius in px
-- **Shadow**: none/sm/md/lg
-- **Icon**: if present
-
-Group by section. Also note: where the eye goes first, whether the layout breathes or feels cramped, whether hierarchy is clear or competing, what feels intentional vs accidental.
-
-### Level 2: System (always runs)
-
-Extract the design system behind what's visible:
-
-**Colors:** page bg, card/surface bg, primary action, secondary, text primary, text secondary/muted, border/divider, accent, destructive, success. All hex values. Note whether the palette feels cohesive or patchwork.
-
-**Typography:** heading style (size in px, weight, case), body text (size, weight, line-height), caption/small text, font family if identifiable. Note whether the type scale feels intentional.
-
-**Spacing and shape:** spacing pattern (tight 4-8px / comfortable 12-16px / spacious 24-32px+), border radius pattern (sharp 0-2px / subtle 4-6px / rounded 8-12px / pill), overall density (compact / comfortable / spacious). Note consistency.
-
-### Level 3: Blueprint (escalates when building)
-
-Runs when the user needs to implement, rebuild, or clone the UI.
-
-**Layout architecture:** page layout pattern, content layout per section, container width, responsive context, scroll clues, z-index layers.
-
-**Interaction map:** primary CTA, secondary actions, navigation pattern, form elements, data display patterns, visible states. Note where a user would hesitate or feel friction.
-
-## Output format
-
-**Critique/audit:** Lead with what's wrong. Ground each observation in specifics (the exact hex, spacing, or element) and how it affects the experience. Don't catalog everything — focus on what matters.
-
-**Comparison (before/after):** What changed, what improved, what regressed, what still needs work.
-
-**Full audit report:** Write to `~/.clearshot/reports/{date}-{slug}.md`:
+Generate `taste.md` in the project root:
 
 ```markdown
-# {Page name} — Clearshot Audit
+# Taste — {Project Name}
+
+## Identity
+{One sentence. What this is and who it's for.}
+
+## Principles
+{3-5 ordered design principles.}
+{Each principle is a decision, not a platitude. "Clarity over decoration" > "Good design."}
+
+## Visual Language
+
+### Palette
+| Role | Hex | Notes |
+|------|-----|-------|
+| Page background | #___ | |
+| Surface (cards) | #___ | |
+| Primary action | #___ | CTAs, links, accents |
+| Text primary | #___ | Headings |
+| Text body | #___ | Paragraphs |
+| Text secondary | #___ | Supporting |
+| Text muted | #___ | Captions, meta |
+| Border | #___ | Card edges, dividers |
+| Error | #___ | Validation |
+| Success | #___ | Confirmations |
+
+### Typography
+| Role | Family | Size | Weight | Case | Tracking |
+|------|--------|------|--------|------|----------|
+| Display | ___ | ___px | ___ | ___ | ___ |
+| Heading | ___ | ___px | ___ | ___ | ___ |
+| Subheading | ___ | ___px | ___ | ___ | ___ |
+| Body | ___ | ___px / ___lh | ___ | ___ | ___ |
+| Label | ___ | ___px | ___ | ___ | ___ |
+| Caption | ___ | ___px | ___ | ___ | ___ |
+
+### Spacing
+Base unit: ___px
+Section gap: ___px
+Card padding: ___px
+Element gap: ___px
+Dense gap: ___px
+
+### Shape
+Card radius: ___px
+Button radius: ___px (or pill)
+Input radius: ___px
+Avatar radius: ___px (or circle)
+
+### Depth (shadow values)
+| Level | Shadow | Usage |
+|-------|--------|-------|
+| Flat | none | Non-interactive containers |
+| Raised | ___ | Interactive surfaces |
+| Elevated | ___ | Modals, dropdowns, popovers |
+| Button | ___ | Action elements (may include colored shadow) |
+
+## Component Taxonomy
+
+Every visible element falls into one of these categories. Each has a distinct visual signature. Users should identify the category in under one second.
+
+### Static containers
+{Appearance: flat, no shadow, faint border or none, white/surface bg}
+{Signal: "I hold content. Don't click me."}
+{Cursor: default}
+{Hover: none}
+
+### Interactive surfaces
+{Appearance: raised with shadow, visible border, white/surface bg}
+{Signal: "I'm a doorway. Click to go somewhere."}
+{Cursor: pointer}
+{Hover: border tints toward primary, faint primary bg wash, shadow deepens}
+
+### Action buttons — primary
+{Appearance: filled primary color, pill shape, 2px border, colored shadow}
+{Signal: "I trigger an action. Click to do something."}
+{Cursor: pointer}
+{Hover: darkens, shadow intensifies}
+{Active: scale down (0.97)}
+
+### Action buttons — secondary
+{Appearance: outlined, pill shape, 2px border (thicker than card borders), tinted or white bg}
+{Signal: "I'm an alternative action."}
+{Cursor: pointer}
+{Hover: border darkens, bg tints}
+{Active: scale down (0.97)}
+
+### Form inputs
+{Appearance: white bg, visible border, rounded (not pill), focus ring on interaction}
+{Cursor: text/pointer depending on type}
+{Focus: primary-colored ring or border}
+
+### Text links
+{Appearance: colored text (primary), optional underline}
+{Cursor: pointer}
+{Hover: underline or color shift}
+
+## Anti-patterns — project-specific
+{5-10 specific things that would violate this project's taste.}
+{e.g., "No drop shadows heavier than 0 4px 20px", "Never use opacity below 0.4 for text"}
+
+## AI Slop Indicators — universal
+These patterns indicate the UI was generated carelessly. If you see them, flag immediately:
+- Generic purple-blue-on-white SaaS palette with no brand connection
+- Gradient text headings
+- Glassmorphism / frosted glass cards with no functional purpose
+- Dashboard hero with exactly 4 metric stat cards in a row
+- Card grids where every card is forced to identical height
+- Bounce/elastic easing on every animation
+- Generic stock-illustration style (isometric people, abstract blobs)
+- Placeholder copy that shipped ("Lorem ipsum", "Acme Corp", "John Doe")
+- Shadows on everything — no depth hierarchy, just uniform depth
+- Components that look identical but serve different purposes (buttons = cards = inputs)
+```
+
+### Validation
+
+After generating taste.md, verify it against the existing codebase:
+1. Do the specified colors match what's in the CSS/Tailwind config?
+2. Do the font families match what's imported?
+3. Are the anti-patterns grounded in reality for this project?
+4. Does the component taxonomy match the actual CSS classes?
+
+Fix any discrepancies before saving.
+
+---
+
+## Mode 2: Verify — Audit the live UI
+
+### Capture protocol
+
+Use `cursor-ide-browser` MCP tools in this order:
+
+1. **Navigate**: `browser_navigate` to target URL with `take_screenshot_afterwards: true`
+2. **Lock**: `browser_lock` to prevent interference
+3. **Screenshot**: `browser_take_screenshot` for above-fold
+4. **Scroll and capture**: `browser_scroll` down, `browser_take_screenshot` — repeat until page bottom
+5. **Extract computed styles**: `browser_console` to get real values:
+   ```js
+   (function(){
+     var body = getComputedStyle(document.body);
+     var h1 = document.querySelector('h1,h2');
+     var card = document.querySelector('[class*=card]');
+     var btn = document.querySelector('button,.btn');
+     return JSON.stringify({
+       bodyBg: body.backgroundColor,
+       bodyFont: body.fontFamily,
+       bodyColor: body.color,
+       h1Size: h1 ? getComputedStyle(h1).fontSize : null,
+       h1Weight: h1 ? getComputedStyle(h1).fontWeight : null,
+       cardBg: card ? getComputedStyle(card).backgroundColor : null,
+       cardShadow: card ? getComputedStyle(card).boxShadow : null,
+       cardBorder: card ? getComputedStyle(card).border : null,
+       btnBg: btn ? getComputedStyle(btn).backgroundColor : null,
+       btnBorder: btn ? getComputedStyle(btn).border : null,
+       btnRadius: btn ? getComputedStyle(btn).borderRadius : null,
+     }, null, 2);
+   })()
+   ```
+6. **Responsive test**: `browser_resize` to each breakpoint, screenshot each:
+   - **Mobile**: 375×812
+   - **Tablet**: 768×1024
+   - **Desktop wide**: 1440×900
+7. **Unlock**: `browser_unlock` when all captures are done
+
+### Analysis
+
+Run every layer. Skip nothing.
+
+#### Layer 1: Spatial Grid
+
+Divide the screenshot into a **5×5 grid**. For each occupied cell:
+- What section lives there (nav, hero, sidebar, content, footer, modal, empty space)
+- Approximate size relative to viewport
+- Relationship to neighbors
+
+For every visible element, capture:
+- **Type**: button, input, card, image, icon, text, link, toggle, tab, badge, avatar, table, chart
+- **Label**: exact visible text
+- **Position**: grid cell + relative placement
+- **State**: default, hover, active, disabled, selected, error, loading
+- **Size**: pixel estimate
+- **Background**: hex
+- **Text color**: hex
+- **Border**: visible/none, width, radius in px
+- **Shadow**: none / sm / md / lg / colored
+- **Icon**: if present, which one
+
+Group by section. Note: where the eye lands first, whether hierarchy is clear or competing, whether the layout breathes or suffocates, what feels intentional vs accidental.
+
+#### Layer 2: Taste Check
+
+Load the project's `taste.md`. Check every observation against it:
+
+| Check | Method |
+|-------|--------|
+| Palette match | Compare screenshot colors to taste.md hex values |
+| Typography scale | Compare rendered sizes/weights to taste.md spec |
+| Spacing consistency | Measure gaps between sections, cards, elements |
+| Component taxonomy | Is each element visually categorized per the taxonomy? |
+| Anti-pattern scan | Are any project-specific anti-patterns present? |
+| AI slop scan | Are any universal slop indicators visible? |
+
+For each deviation: state what should be (per taste.md), what is (measured), severity, and the specific CSS/HTML fix.
+
+#### Layer 3: Cognitive Load
+
+Three dimensions. Grade each A through F.
+
+**Clarity** — Can a user identify every element's purpose in <1 second?
+- Can you tell buttons from cards from inputs instantly?
+- Is the hierarchy (primary → secondary → tertiary) obvious without reading?
+- Are non-interactive elements obviously non-interactive?
+- Are interactive elements obviously interactive?
+- Could a first-time user navigate without instructions?
+
+**Action** — Can a user find the primary action in <2 seconds?
+- Is there one clear CTA per viewport?
+- Do secondary actions visually recede?
+- Are destructive actions gated (confirmation, different color)?
+- Does the eye path lead naturally toward the action?
+
+**Delight** — Does any element spark interest or reward attention?
+- Is there purposeful motion (not decoration)?
+- Are there visual details that reward a second look?
+- Does the interface feel crafted or generated?
+- Would a user screenshot this to share?
+
+#### Layer 4: Accessibility
+
+Measure on the live rendered page:
+
+| Check | Standard | Method |
+|-------|----------|--------|
+| Text contrast | WCAG AA: 4.5:1 (normal), 3:1 (large) | Computed bg + fg colors → calculate ratio |
+| Touch targets | ≥44×44px | Measure interactive element dimensions |
+| Focus indicators | Visible focus ring on tab | Tab through page, screenshot |
+| Heading hierarchy | h1 → h2 → h3, no skips | Inspect DOM |
+| Color independence | Info not conveyed by color alone | Check error states, status badges |
+| Motion | Respects prefers-reduced-motion | Check if animations honor the media query |
+
+#### Layer 5: Responsive
+
+At each breakpoint (375, 768, 1440):
+- Does the layout reflow without horizontal scroll?
+- Is text still readable (≥14px body)?
+- Are touch targets still ≥44×44px on mobile?
+- Do images resize or clip?
+- Does the navigation adapt (sidebar → mobile nav)?
+- Is any content hidden that shouldn't be?
+
+### Severity
+
+| Level | Meaning | Examples |
+|-------|---------|---------|
+| **P0** | Blocks a core task | Broken CTA, invisible text, form can't submit, page doesn't load |
+| **P1** | Significant UX harm | Buttons mistaken for cards, contrast below WCAG AA, confusing hierarchy, broken on mobile |
+| **P2** | Quality issue for attentive users | Inconsistent spacing, off-palette color, heading size too similar to body, slow animation |
+| **P3** | Polish opportunity | Faint logo, suboptimal easing, minor alignment drift, shadow too subtle |
+
+### Report format
+
+Write to `~/.clearshot/reports/{date}-{slug}.md`:
+
+```markdown
+# {Page} — Clearshot Audit
 **URL:** {url}
 **Date:** {YYYY-MM-DD}
 **Viewport:** {width}×{height}
+**taste.md:** {present / absent — if absent, note it was skipped}
 
-## Level 1: Map
-{5×5 grid analysis, element inventory grouped by section}
+## Spatial Map
+{5×5 grid analysis. Element inventory grouped by section.}
 
-## Level 2: System
-{Color palette, typography scale, spacing patterns}
+## Computed Values
+{Key values extracted via browser console. Compared to taste.md.}
+
+## Taste Deviations
+{Each deviation: expected (per taste.md) vs actual (measured). Severity. Fix.}
+
+## Cognitive Load
+| Dimension | Grade | Notes |
+|-----------|-------|-------|
+| Clarity | _/F | {one-line finding} |
+| Action | _/F | {one-line finding} |
+| Delight | _/F | {one-line finding} |
+
+## Accessibility
+{Findings with WCAG standard, measured ratio, and fix.}
+
+## Responsive
+{Findings per breakpoint.}
 
 ## Issues
-{Prioritized list: severity, element, problem, fix}
+{P0–P3 prioritized list. Each: element → problem → fix (specific CSS/HTML).}
 
-## Taste
-{Overall feel, what works, what doesn't, what's missing}
+## Verdict
+{What works. What doesn't. What's missing.}
+{Factual score: _/10. Taste score: _/10.}
 ```
 
-## Core principles
+---
 
-- **Be specific.** "A dashboard with some cards" is never acceptable. "3-column grid, ~280px cards, #FFFFFF bg, 12px radius, border rgba(0,0,0,0.06) + shadow 0 2px 8px — cards feel solid but competing with each other" is.
-- **Hex over color names, pixels over vague sizes.** Say #3B82F6 not "blue." Say ~16px not "some."
-- **Group by section, not by element type.**
-- **Call out the non-obvious.** Custom illustrations, unusual patterns, implied animations, dynamic vs static data.
-- **Match the user's pace.** Rapid iteration = concise output. Detailed audit = exhaustive.
+## Core rules
 
-## Self-rating (internal, silent)
-
-After analysis, rate 0-10: spatial accuracy, specificity, taste, actionability. Never show the rating to the user.
+1. **Hex over color names.** Say `#3B82F6`, not "blue." Say `~16px`, not "some padding."
+2. **Group by section, not element type.** Users see pages, not component lists.
+3. **Every issue gets a fix.** No observation without a recommendation. Specify the CSS property, the old value, and the new value.
+4. **See what users see.** Use the browser. Computed styles > source code. Rendered layout > template markup.
+5. **Taste is specific.** "Feels off" is unacceptable. "The 20px h2 reads as the same hierarchy level as the 18px h3 — increase to 24px for clear separation" is required.
+6. **Be honest about AI slop.** If the page looks like it was generated by a default LLM prompt, say so. Identify the specific tells.
+7. **The component taxonomy is law.** If a button looks like a card, that's a P1. If a non-interactive element looks clickable, that's a P1. Visual category confusion is a serious cognitive failure.
